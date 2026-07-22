@@ -43,12 +43,12 @@
     /* Moveable and lockable white block (390px wide by 100px high), positioned at the bottom of the container */
     #white-block {
         position: absolute;
-        bottom: 20px;
+        bottom: 0px;
         left: 0px;
         width: 390px;
         height: 100px;
         background-color: #ffffff;
-        z-index: 3;
+        z-index: 15;
         cursor: move;
         touch-action: none;
         user-select: none;
@@ -58,23 +58,41 @@
     #car-img { position: absolute; top: 391.27px; left: 125.95px; width: 207px; z-index: 10; opacity: 0.7; }
     #rest-img { position: absolute; top: 619.71px; left: 6.70px; width: 381px; z-index: 10; }
     
-    /* Fixed elements remain fixed to the viewport */
-    #pulse-logo { position: fixed; top: 242.52px; left: 623.43px; width: 200px; filter: brightness(0) invert(80%) sepia(0) saturate(0); z-index: 5; animation: pulse-animation 1.6s infinite ease-in-out; }
-    #header-img { position: fixed; top: -4px; left: 525px; width: 390px; z-index: 1000; }
+    /* Mobile-optimized fixed elements */
+    #pulse-logo { 
+        position: fixed; 
+        top: 242.52px; 
+        left: 50%; 
+        transform: translateX(-50%); 
+        width: 200px; 
+        filter: brightness(0) invert(80%) sepia(0) saturate(0); 
+        z-index: 5; 
+        animation: pulse-animation 1.6s infinite ease-in-out; 
+    }
+    
+    #header-img { 
+        position: fixed; 
+        top: 0px; 
+        left: 50%; 
+        transform: translateX(-50%); 
+        width: 390px; 
+        z-index: 1000; 
+    }
     
     #bottom-img { 
         position: fixed; 
-        bottom: -12px; 
+        bottom: 0px; 
         left: 50%;
         transform: translateX(-50%);
         width: 390px; 
         z-index: 10; 
     }
  
-    /* button.png locked in position, width 80px, not draggable */
+    /* button.png locked in position for mobile */
     #qr-nav-btn {
         position: fixed;
-        left: 680px;
+        left: 50%;
+        transform: translateX(-50%);
         top: 575.352px;
         width: 80px;
         height: auto;
@@ -87,10 +105,11 @@
         opacity: 0.9;
     }
 
-    /* The close button inside the popup: locked in position, not draggable */
+    /* The close button inside the popup */
     #qr-close-btn {
         position: fixed;
-        left: 688px;
+        left: 50%;
+        transform: translateX(-50%);
         top: 581.352px;
         width: 60px;
         height: auto;
@@ -105,8 +124,7 @@
 
     @keyframes pulse-animation { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
-    /* QR Popup overlay - hidden by default, shown on button click.
-       Opaque so the original UI is fully hidden, non-scrollable. */
+    /* QR Popup overlay */
     #qr-popup-overlay {
         display: none;
         position: fixed;
@@ -125,8 +143,6 @@
         display: flex;
     }
 
-    /* Container now caps at the viewport size so the image can never
-       exceed the screen, and scales down proportionally with object-fit */
     #qr-popup-container {
         position: relative;
         width: 100%;
@@ -152,34 +168,33 @@
 <body>
 
 <div class="container" id="main-container">
-    <img src="background.png" class="bg-image" id="bg-img" alt="Background">
+    <img src="./background.png" class="bg-image" id="bg-img" alt="Background">
     <div id="white-block"></div>
     <div id="clock"><span id="clock-text"></span></div>
-    <img src="name.png" id="name-img" alt="Name Overlay">
-    <img src="car.png" id="car-img" alt="Car Overlay">
-    <img src="rest.png" id="rest-img" alt="Rest Overlay">
+    <img src="./name.png" id="name-img" alt="Name Overlay">
+    <img src="./car.png" id="car-img" alt="Car Overlay">
+    <img src="./rest.png" id="rest-img" alt="Rest Overlay">
 </div>
 
 <!-- button.png locked in position -->
-<img src="button.png" id="qr-nav-btn" alt="QR Code Button">
+<img src="./button.png" id="qr-nav-btn" alt="QR Code Button">
 
-<img src="bottom.png" id="bottom-img" alt="Bottom">
-<img src="pulse-logo.png" id="pulse-logo" alt="Pulsing Logo">
-<img src="header.png" id="header-img" alt="Header">
+<img src="./bottom.png" id="bottom-img" alt="Bottom">
+<img src="./pulse-logo.png" id="pulse-logo" alt="Pulsing Logo">
+<img src="./header.png" id="header-img" alt="Header">
 
 <!-- QR Popup overlay, shown when button.png is clicked -->
 <div id="qr-popup-overlay">
     <div id="qr-popup-container">
-        <img src="qrback.png" id="qr-popup-bg" alt="QR Background">
+        <img src="./qrback.png" id="qr-popup-bg" alt="QR Background">
     </div>
     <!-- Second button.png, locked in position, closes the popup -->
-    <img src="button.png" id="qr-close-btn" alt="Back Button">
+    <img src="./button.png" id="qr-close-btn" alt="Back Button">
 </div>
 
 <script>
     const qrBtn = document.getElementById('qr-nav-btn');
 
-    // Click handler for opening the QR popup
     qrBtn.addEventListener('click', (e) => {
         openQrPopup();
     });
@@ -194,10 +209,8 @@
         document.body.style.overflow = '';
     }
 
-    // Click handler for the popup's close button (locked in place, no drag)
     document.getElementById('qr-close-btn').addEventListener('click', closeQrPopup);
 
-    // Draggable White Block Logic
     const whiteBlock = document.getElementById('white-block');
     let blockOffsetX, blockOffsetY;
 
@@ -224,7 +237,7 @@
         const container = document.getElementById('main-container');
         const containerRect = container.getBoundingClientRect();
         
-        whiteBlock.style.bottom = 'auto'; // Switch from bottom anchoring to top positioning during drag
+        whiteBlock.style.bottom = 'auto'; 
         whiteBlock.style.left = (clientX - blockOffsetX - containerRect.left) + 'px';
         whiteBlock.style.top = (clientY - blockOffsetY + window.scrollY - containerRect.top) + 'px';
     }
@@ -234,7 +247,6 @@
         document.removeEventListener('touchmove', dragBlock);
     }
 
-    // Clock logic & Draggable Clock
     function updateClock() {
         const now = new Date();
         let hours = now.getHours();
