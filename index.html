@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Static UI</title>
+<style>
+    /* Ensure body can grow to the size of the content */
+    html, body {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: #fff;
+        overflow-x: hidden; /* Prevents side-to-side scroll */
+    }
+    
+    .container { 
+        position: relative; 
+        width: 390px; 
+        margin: 0 auto; 
+    }
+
+    /* The background image defines the height of the container */
+    .bg-image { width: 100%; display: block; }
+
+    #clock { 
+        position: absolute; 
+        top: 352px; 
+        left: 16px; 
+        font-family: sans-serif; 
+        font-weight: 700; 
+        font-size: 15px; 
+        color: #000; 
+        z-index: 100; 
+        user-select: none; 
+        background-color: #ffffff; 
+        padding: 1px 4px; 
+        border-radius: 2px;
+        cursor: move;
+        touch-action: none;
+    }
+
+    /* Moveable and lockable white block (390px wide by 100px high), positioned at the bottom of the container */
+    #white-block {
+        position: absolute;
+        bottom: 20px;
+        left: 0px;
+        width: 390px;
+        height: 100px;
+        background-color: #ffffff;
+        z-index: 3;
+        cursor: move;
+        touch-action: none;
+        user-select: none;
+    }
+
+    #name-img { position: absolute; top: 154.41px; left: 153.56px; width: 198px; z-index: 10; }
+    #car-img { position: absolute; top: 391.27px; left: 125.95px; width: 207px; z-index: 10; opacity: 0.7; }
+    #rest-img { position: absolute; top: 619.71px; left: 6.70px; width: 381px; z-index: 10; }
+    
+    /* Fixed elements remain fixed to the viewport */
+    #pulse-logo { position: fixed; top: 242.52px; left: 623.43px; width: 200px; filter: brightness(0) invert(80%) sepia(0) saturate(0); z-index: 5; animation: pulse-animation 1.6s infinite ease-in-out; }
+    #header-img { position: fixed; top: -4px; left: 525px; width: 390px; z-index: 1000; }
+    
+    #bottom-img { 
+        position: fixed; 
+        bottom: -12px; 
+        left: 50%;
+        transform: translateX(-50%);
+        width: 390px; 
+        z-index: 10; 
+    }
+ 
+    /* button.png locked in position, width 80px, not draggable */
+    #qr-nav-btn {
+        position: fixed;
+        left: 680px;
+        top: 575.352px;
+        width: 80px;
+        height: auto;
+        cursor: pointer;
+        z-index: 200;
+        transition: opacity 0.2s;
+    }
+
+    #qr-nav-btn:hover {
+        opacity: 0.9;
+    }
+
+    /* The close button inside the popup: locked in position, not draggable */
+    #qr-close-btn {
+        position: fixed;
+        left: 688px;
+        top: 581.352px;
+        width: 60px;
+        height: auto;
+        cursor: pointer;
+        z-index: 2001;
+        transition: opacity 0.2s;
+    }
+
+    #qr-close-btn:hover {
+        opacity: 0.9;
+    }
+
+    @keyframes pulse-animation { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+    /* QR Popup overlay - hidden by default, shown on button click.
+       Opaque so the original UI is fully hidden, non-scrollable. */
+    #qr-popup-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: #fff;
+        z-index: 2000;
+        overflow: hidden;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #qr-popup-overlay.active {
+        display: flex;
+    }
+
+    /* Container now caps at the viewport size so the image can never
+       exceed the screen, and scales down proportionally with object-fit */
+    #qr-popup-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #qr-popup-bg {
+        max-width: 100vw;
+        max-height: 100vh;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        display: block;
+        pointer-events: none;
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+</style>
+</head>
+<body>
+
+<div class="container" id="main-container">
+    <img src="background.png" class="bg-image" id="bg-img" alt="Background">
+    <div id="white-block"></div>
+    <div id="clock"><span id="clock-text"></span></div>
+    <img src="name.png" id="name-img" alt="Name Overlay">
+    <img src="car.png" id="car-img" alt="Car Overlay">
+    <img src="rest.png" id="rest-img" alt="Rest Overlay">
+</div>
+
+<!-- button.png locked in position -->
+<img src="button.png" id="qr-nav-btn" alt="QR Code Button">
+
+<img src="bottom.png" id="bottom-img" alt="Bottom">
+<img src="pulse-logo.png" id="pulse-logo" alt="Pulsing Logo">
+<img src="header.png" id="header-img" alt="Header">
+
+<!-- QR Popup overlay, shown when button.png is clicked -->
+<div id="qr-popup-overlay">
+    <div id="qr-popup-container">
+        <img src="qrback.png" id="qr-popup-bg" alt="QR Background">
+    </div>
+    <!-- Second button.png, locked in position, closes the popup -->
+    <img src="button.png" id="qr-close-btn" alt="Back Button">
+</div>
+
+<script>
+    const qrBtn = document.getElementById('qr-nav-btn');
+
+    // Click handler for opening the QR popup
+    qrBtn.addEventListener('click', (e) => {
+        openQrPopup();
+    });
+
+    function openQrPopup() {
+        document.getElementById('qr-popup-overlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeQrPopup() {
+        document.getElementById('qr-popup-overlay').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    // Click handler for the popup's close button (locked in place, no drag)
+    document.getElementById('qr-close-btn').addEventListener('click', closeQrPopup);
+
+    // Draggable White Block Logic
+    const whiteBlock = document.getElementById('white-block');
+    let blockOffsetX, blockOffsetY;
+
+    whiteBlock.addEventListener('mousedown', startBlockDrag);
+    whiteBlock.addEventListener('touchstart', startBlockDrag, {passive: false});
+
+    function startBlockDrag(e) {
+        const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+        
+        blockOffsetX = clientX - whiteBlock.getBoundingClientRect().left;
+        blockOffsetY = clientY - whiteBlock.getBoundingClientRect().top;
+        
+        document.addEventListener('mousemove', dragBlock);
+        document.addEventListener('touchmove', dragBlock, {passive: false});
+        document.addEventListener('mouseup', stopBlockDrag);
+        document.addEventListener('touchend', stopBlockDrag);
+    }
+
+    function dragBlock(e) {
+        const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+        
+        const container = document.getElementById('main-container');
+        const containerRect = container.getBoundingClientRect();
+        
+        whiteBlock.style.bottom = 'auto'; // Switch from bottom anchoring to top positioning during drag
+        whiteBlock.style.left = (clientX - blockOffsetX - containerRect.left) + 'px';
+        whiteBlock.style.top = (clientY - blockOffsetY + window.scrollY - containerRect.top) + 'px';
+    }
+
+    function stopBlockDrag() {
+        document.removeEventListener('mousemove', dragBlock);
+        document.removeEventListener('touchmove', dragBlock);
+    }
+
+    // Clock logic & Draggable Clock
+    function updateClock() {
+        const now = new Date();
+        let hours = now.getHours();
+        const ampm = hours >= 12 ? 'pm' : 'am';
+        hours = hours % 12 || 12;
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const timeString = `${now.getDate()} ${now.toLocaleString('default', {month:'short'})} ${now.getFullYear()} ${hours}:${minutes}${ampm}`;
+        document.getElementById('clock-text').textContent = timeString;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    const clock = document.getElementById('clock');
+    let offsetX, offsetY;
+
+    clock.addEventListener('mousedown', startClockDrag);
+    clock.addEventListener('touchstart', startClockDrag, {passive: false});
+
+    function startClockDrag(e) {
+        const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+        
+        offsetX = clientX - clock.getBoundingClientRect().left;
+        offsetY = clientY - clock.getBoundingClientRect().top;
+        
+        document.addEventListener('mousemove', dragClock);
+        document.addEventListener('touchmove', dragClock, {passive: false});
+        document.addEventListener('mouseup', stopClockDrag);
+        document.addEventListener('touchend', stopClockDrag);
+    }
+
+    function dragClock(e) {
+        const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+        
+        const container = document.getElementById('main-container');
+        const containerRect = container.getBoundingClientRect();
+        
+        clock.style.left = (clientX - offsetX - containerRect.left) + 'px';
+        clock.style.top = (clientY - offsetY + window.scrollY - containerRect.top) + 'px';
+    }
+
+    function stopClockDrag() {
+        document.removeEventListener('mousemove', dragClock);
+        document.removeEventListener('touchmove', dragClock);
+    }
+</script>
+</body>
+</html>
