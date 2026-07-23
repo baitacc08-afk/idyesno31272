@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="./apple.png">
 <title>Static UI</title>
 <style>
     /* Ensure body can grow and fill the safe areas edge-to-edge */
@@ -64,10 +65,9 @@
     #yellow-block {
         position: fixed;
         top: 0px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 390px;
-        height: calc(38px + env(safe-area-inset-top));
+        left: 0px;
+        width: 100%;
+        height: calc(55px + env(safe-area-inset-top));
         background: linear-gradient(to right, 
             #f2b15d, 
             #f1b262, 
@@ -99,7 +99,6 @@
     }
     
     #header-img { 
-
         position: fixed; 
         top: env(safe-area-inset-top); 
         left: 50%; 
