@@ -63,7 +63,7 @@
     /* Fixed yellow/orange gradient block that fills the top safe area/header zone and scrolls with the screen */
     #yellow-block {
         position: fixed;
-        top: 15px;
+        top: 0px;
         left: 50%;
         transform: translateX(-50%);
         width: 390px;
@@ -99,8 +99,9 @@
     }
     
     #header-img { 
+
         position: fixed; 
-        top: 0px; 
+        top: env(safe-area-inset-top); 
         left: 50%; 
         transform: translateX(-50%); 
         width: 390px; 
