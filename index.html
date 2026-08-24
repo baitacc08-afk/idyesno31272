@@ -10,21 +10,28 @@
 <style>
     /* Ensure body can grow and fill the safe areas edge-to-edge */
     html, body {
-        width: 100%;
-        margin: 0;
-        padding: 0;
-        background-color: #fff;
-        overflow-x: hidden; /* Prevents side-to-side scroll */
-    }
+        html {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+    overflow-x: hidden; /* Prevents side-to-side scroll */
+    overscroll-behavior-y: none; /* Prevents vertical bounce/rubber-banding */
+}
 
-    body {
-        padding-top: env(safe-area-inset-top);
-    }
-    
-    .container { 
-        position: relative; 
-        width: 390px; 
-        margin: 0 auto; 
+body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+    overflow-x: hidden;
+    padding-top: env(safe-area-inset-top);
+}
+
+.container { 
+    position: relative; 
+    width: 390px; 
+    margin: 0 auto;
     }
 
     /* The background image defines the height of the container */
