@@ -6,329 +6,1281 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="./apple.png">
-<title>Static UI</title>
+<title>Static UI - Layout Editor</title>
+
 <style>
-    /* Ensure body can grow and fill the safe areas edge-to-edge */
-    html, body {
-        width: 100%;
-        margin: 0;
-        padding: 0;
-        background-color: #fff;
-        overflow-x: hidden; /* Prevents side-to-side scroll */
-    }
+* {
+    box-sizing: border-box;
+}
 
-    body {
-        padding-top: env(safe-area-inset-top);
-    }
-    
-    .container { 
-        position: relative; 
-        width: 390px; 
-        margin: 0 auto; 
-    }
+html, body {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    overflow-x: hidden;
+}
 
-    /* The background image defines the height of the container */
-    .bg-image { width: 100%; display: block; }
+body {
+    padding-top: env(safe-area-inset-top);
+    font-family: Arial, sans-serif;
+}
 
-    #clock { 
-        position: absolute; 
-        top: 352px; 
-        left: 16px; 
-        font-family: sans-serif; 
-        font-weight: 700; 
-        font-size: 15px; 
-        color: #000; 
-        z-index: 100; 
-        user-select: none; 
-        background-color: transparent; 
-        padding: 1px 4px; 
-        border-radius: 2px;
-        cursor: move;
-        touch-action: none;
-    }
+img {
+    -webkit-user-drag: none;
+    user-select: none;
+}
 
-    /* White block sitting exactly behind the clock, just above the background image */
-    #clock-bg {
-        position: absolute;
-        top: 352px;
-        left: 16px;
-        background-color: #ffffff;
-        border-radius: 2px;
-        z-index: 1;
-        pointer-events: none;
-    }
+.container {
+    position: relative;
+    width: 390px;
+    max-width: 100%;
+    margin: 0 auto;
+}
 
-    /* Moveable and lockable white block (390px wide by 100px high), positioned at the bottom of the container */
-    #white-block {
-        position: absolute;
-        bottom: 0px;
-        left: 0px;
-        width: 390px;
-        height: 100px;
-        background-color: #ffffff;
-        z-index: 9;
-        cursor: move;
-        touch-action: none;
-        user-select: none;
-    }
+.bg-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    pointer-events: none;
+}
 
-    /* Fixed yellow/orange gradient block that fills the top safe area/header zone and scrolls with the screen */
-    #yellow-block {
-        position: fixed;
-        top: 0px;
-        left: 0px;
-        width: 100%;
-        height: calc(55px + env(safe-area-inset-top));
-        background: linear-gradient(to right, 
-            #f2b15d, 
-            #f1b262, 
-            #f1b765, 
-            #f3bc6a, 
-            #f4c06d, 
-            #f4c575, 
-            #f7c97b, 
-            #f7d281
-        );
-        z-index: 999;
-        user-select: none;
-    }
+#clock {
+    position: absolute;
+    top: 352px;
+    left: 16px;
+    font-family: sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: #000;
+    z-index: 100;
+    user-select: none;
+    background: transparent;
+    padding: 1px 4px;
+    border-radius: 2px;
+    white-space: nowrap;
+}
 
-    #name-img { position: absolute; top: 154.41px; left: 153.56px; width: 198px; z-index: 10; }
-    #car-img { position: absolute; top: 391.27px; left: 125.95px; width: 207px; z-index: 10; opacity: 0.7; }
-    #rest-img { position: absolute; top: 619.71px; left: 6.70px; width: 381px; z-index: 10; }
-    
-    /* Mobile-optimized fixed elements */
-    #pulse-logo { 
-        position: fixed; 
-        top: calc(242.52px + env(safe-area-inset-top)); 
-        left: 25%; 
-        transform: translateX(-50%); 
-        width: 200px; 
-        filter: brightness(0) invert(80%) sepia(0) saturate(0); 
-        z-index: 5; 
-        animation: pulse-animation 1.6s infinite ease-in-out; 
-    }
-    
-    #header-img { 
-        position: fixed; 
-        top: env(safe-area-inset-top); 
-        left: 50%; 
-        transform: translateX(-50%); 
-        width: 390px; 
-        z-index: 1000; 
-        pointer-events: none;
-    }
-    
-    #bottom-img { 
-        position: fixed; 
-        bottom: 0px; 
-        left: 50%;
-        transform: translateX(-50%);
-        width: 390px; 
-        z-index: 10; 
-    }
- 
-    /* button.png locked in position for mobile */
-    #qr-nav-btn {
-        position: fixed;
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: 35px;
-        width: 80px;
-        height: auto;
-        cursor: pointer;
-        z-index: 200;
-        transition: opacity 0.2s;
-    }
+#clock-bg {
+    position: absolute;
+    top: 352px;
+    left: 16px;
+    background: #fff;
+    border-radius: 2px;
+    z-index: 1;
+    pointer-events: none;
+}
 
-    #qr-nav-btn:hover {
-        opacity: 0.9;
-    }
+#white-block {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 390px;
+    height: 100px;
+    background: #fff;
+    z-index: 9;
+    user-select: none;
+}
 
-    /* The close button inside the popup */
-    #qr-close-btn {
-        position: fixed;
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: 38px;
-        width: 75px;
-        height: auto;
-        cursor: pointer;
-        z-index: 2001;
-        transition: opacity 0.2s;
-    }
+#yellow-block {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: calc(55px + env(safe-area-inset-top));
+    background: linear-gradient(
+        to right,
+        #f2b15d,
+        #f1b262,
+        #f1b765,
+        #f3bc6a,
+        #f4c06d,
+        #f4c575,
+        #f7c97b,
+        #f7d281
+    );
+    z-index: 999;
+    user-select: none;
+}
 
-    #qr-close-btn:hover {
-        opacity: 0.9;
-    }
+#name-img {
+    position: absolute;
+    top: 154.41px;
+    left: 153.56px;
+    width: 198px;
+    z-index: 10;
+}
 
-    @keyframes pulse-animation { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+#car-img {
+    position: absolute;
+    top: 391.27px;
+    left: 125.95px;
+    width: 207px;
+    z-index: 10;
+    opacity: 0.7;
+}
 
-    /* QR Popup overlay */
-    #qr-popup-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background-color: #fff;
-        z-index: 2000;
-        overflow: hidden;
-        justify-content: center;
-        align-items: center;
-    }
+#rest-img {
+    position: absolute;
+    top: 619.71px;
+    left: 6.70px;
+    width: 381px;
+    z-index: 10;
+}
 
-    #qr-popup-overlay.active {
-        display: flex;
-    }
+#pulse-logo {
+    position: fixed;
+    top: calc(242.52px + env(safe-area-inset-top));
+    left: 25%;
+    transform: translateX(-50%);
+    width: 200px;
+    filter: brightness(0) invert(80%) sepia(0) saturate(0);
+    z-index: 5;
+    animation: pulse-animation 1.6s infinite ease-in-out;
+}
 
-    #qr-popup-container {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+#header-img {
+    position: fixed;
+    top: env(safe-area-inset-top);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 390px;
+    max-width: 100%;
+    z-index: 1000;
+    pointer-events: none;
+}
 
-    #qr-popup-bg {
-        max-width: 100vw;
-        max-height: 100vh;
-        width: auto;
-        height: auto;
-        object-fit: contain;
-        display: block;
-        pointer-events: none;
-        image-rendering: -webkit-optimize-contrast;
-        image-rendering: crisp-edges;
-    }
+#bottom-img {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 390px;
+    max-width: 100%;
+    z-index: 10;
+}
+
+#qr-nav-btn {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 35px;
+    width: 80px;
+    height: auto;
+    z-index: 200;
+    transition: opacity 0.2s;
+}
+
+#qr-close-btn {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 38px;
+    width: 75px;
+    height: auto;
+    z-index: 2001;
+    transition: opacity 0.2s;
+}
+
+@keyframes pulse-animation {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+#qr-popup-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #fff;
+    z-index: 2000;
+    overflow: hidden;
+    justify-content: center;
+    align-items: center;
+}
+
+#qr-popup-overlay.active {
+    display: flex;
+}
+
+#qr-popup-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#qr-popup-bg {
+    max-width: 100vw;
+    max-height: 100vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    pointer-events: none;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+/* Transparent surface used to drag the selected element. */
+
+#drag-surface {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    cursor: move;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    background: transparent;
+}
+
+body.edit-mode #drag-surface {
+    display: block;
+}
+
+body.edit-mode #editor-panel,
+body.edit-mode #editor-toggle {
+    z-index: 10002;
+}
+
+#drag-instructions {
+    display: none;
+    position: fixed;
+    left: 50%;
+    bottom: 15px;
+    transform: translateX(-50%);
+    z-index: 10001;
+    width: min(340px, calc(100vw - 24px));
+    padding: 11px 14px;
+    background: rgba(20, 20, 20, 0.94);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: center;
+    pointer-events: none;
+}
+
+body.edit-mode #drag-instructions {
+    display: block;
+}
+
+/* Highlight selected element. */
+
+.drag-selected {
+    outline: 2px dashed #ff7800 !important;
+    outline-offset: 2px;
+}
+
+/* Visible resize handles. */
+
+#resize-handles {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    border: 2px dashed #ff7800;
+}
+
+body.edit-mode #resize-handles {
+    display: block;
+}
+
+.resize-handle {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: #ff7800;
+    border: 2px solid #fff;
+    border-radius: 3px;
+    pointer-events: auto;
+    touch-action: none;
+}
+
+.resize-handle.nw { left: -7px; top: -7px; cursor: nwse-resize; }
+.resize-handle.ne { right: -7px; top: -7px; cursor: nesw-resize; }
+.resize-handle.sw { left: -7px; bottom: -7px; cursor: nesw-resize; }
+.resize-handle.se { right: -7px; bottom: -7px; cursor: nwse-resize; }
+
+/* Editor panel. */
+
+#editor-panel {
+    position: fixed;
+    top: calc(65px + env(safe-area-inset-top));
+    right: 10px;
+    z-index: 10000;
+    width: min(290px, calc(100vw - 20px));
+    max-height: calc(100vh - 90px);
+    overflow-y: auto;
+    padding: 12px;
+    background: rgba(25, 25, 25, 0.97);
+    color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.3);
+    font-size: 13px;
+}
+
+#editor-panel h3 {
+    margin: 0 0 10px;
+    font-size: 15px;
+}
+
+#editor-panel label {
+    display: block;
+    margin-top: 7px;
+}
+
+#editor-panel button,
+#editor-panel select,
+#editor-panel input[type="number"] {
+    width: 100%;
+    margin: 4px 0;
+    padding: 9px;
+    border: 0;
+    border-radius: 5px;
+    font-size: 13px;
+}
+
+#editor-panel button {
+    cursor: pointer;
+    background: #f1b765;
+    color: #222;
+    font-weight: bold;
+}
+
+#editor-panel button.secondary {
+    background: #e5e5e5;
+}
+
+#editor-panel button.active-button {
+    background: #ff7800;
+    color: #fff;
+}
+
+.dimension-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.dimension-grid label {
+    font-size: 11px;
+    color: #ddd;
+}
+
+.dimension-grid input {
+    width: 100%;
+    margin-top: 4px;
+    padding: 8px;
+    border: 0;
+    border-radius: 5px;
+    font-size: 12px;
+}
+
+.dimension-grid input:disabled {
+    opacity: 0.5;
+}
+
+.editor-status {
+    margin-top: 7px;
+    color: #ddd;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+#coordinate-output {
+    display: none;
+    width: 100%;
+    height: 180px;
+    margin-top: 8px;
+    padding: 8px;
+    resize: vertical;
+    font-family: monospace;
+    font-size: 11px;
+}
+
+#editor-toggle {
+    position: fixed;
+    right: 10px;
+    top: calc(10px + env(safe-area-inset-top));
+    z-index: 10001;
+    padding: 9px 12px;
+    background: #222;
+    color: #fff;
+    border: 1px solid #777;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+body.editor-hidden #editor-panel {
+    display: none;
+}
+
+body.layout-locked #drag-surface,
+body.layout-locked #resize-handles,
+body.layout-locked #drag-instructions {
+    display: none !important;
+}
 </style>
 </head>
+
 <body>
 
-<div id="yellow-block"></div>
+<div id="yellow-block" class="draggable-element" data-drag-name="Yellow header background"></div>
 
 <div class="container" id="main-container">
-    <img src="./background.png" class="bg-image" id="bg-img" alt="Background">
-    <div id="white-block"></div>
+    <img src="./background.png" class="bg-image" id="bg-img" alt="Background" draggable="false">
+
+    <div id="white-block" class="draggable-element" data-drag-name="White block"></div>
+
     <div id="clock-bg"></div>
-    <div id="clock"><span id="clock-text"></span></div>
-    <img src="./name.png" id="name-img" alt="Name Overlay">
-    <img src="./car.png" id="car-img" alt="Car Overlay">
-    <img src="./rest.png" id="rest-img" alt="Rest Overlay">
+
+    <div id="clock" class="draggable-element" data-drag-name="Clock">
+        <span id="clock-text"></span>
+    </div>
+
+    <img src="./name.png" id="name-img" class="draggable-element" data-drag-name="Name image" alt="Name Overlay" draggable="false">
+
+    <img src="./car.png" id="car-img" class="draggable-element" data-drag-name="Car image" alt="Car Overlay" draggable="false">
+
+    <img src="./rest.png" id="rest-img" class="draggable-element" data-drag-name="Rest image" alt="Rest Overlay" draggable="false">
 </div>
 
-<!-- button.png locked in position -->
-<img src="./button.png" id="qr-nav-btn" alt="QR Code Button">
+<img src="./button.png" id="qr-nav-btn" class="draggable-element" data-drag-name="QR navigation button" alt="QR Code Button" draggable="false">
 
-<img src="./bottom.png" id="bottom-img" alt="Bottom">
-<img src="./pulse-logo.png" id="pulse-logo" alt="Pulsing Logo">
-<img src="./header.png" id="header-img" alt="Header">
+<img src="./bottom.png" id="bottom-img" class="draggable-element" data-drag-name="Bottom image" alt="Bottom" draggable="false">
 
-<!-- QR Popup overlay, shown when button.png is clicked -->
+<img src="./pulse-logo.png" id="pulse-logo" class="draggable-element" data-drag-name="Pulse logo" alt="Pulsing Logo" draggable="false">
+
+<img src="./header.png" id="header-img" alt="Header" draggable="false">
+
 <div id="qr-popup-overlay">
     <div id="qr-popup-container">
-        <img src="./qrback.png" id="qr-popup-bg" alt="QR Background">
+        <img src="./qrback.png" id="qr-popup-bg" alt="QR Background" draggable="false">
     </div>
-    <!-- Second button.png, locked in position, closes the popup -->
-    <img src="./button.png" id="qr-close-btn" alt="Back Button">
+
+    <img src="./button.png" id="qr-close-btn" class="draggable-element" data-drag-name="QR popup close button" alt="Back Button" draggable="false">
+</div>
+
+<div id="drag-surface" aria-label="Drag selected element"></div>
+<div id="resize-handles" aria-label="Resize selected element">
+    <div class="resize-handle nw" data-handle="nw"></div>
+    <div class="resize-handle ne" data-handle="ne"></div>
+    <div class="resize-handle sw" data-handle="sw"></div>
+    <div class="resize-handle se" data-handle="se"></div>
+</div>
+
+<div id="drag-instructions">
+    Drag anywhere on the screen to move the selected element.
+    Drag an orange corner handle to resize it. Press Escape to finish.
+</div>
+
+<button id="editor-toggle" type="button">Hide Editor</button>
+
+<div id="editor-panel">
+    <h3>Layout Position & Size Editor</h3>
+
+    <label for="element-select">Element to edit:</label>
+    <select id="element-select">
+        <option value="yellow-block">Yellow header background</option>
+        <option value="white-block">White block</option>
+        <option value="clock">Clock</option>
+        <option value="name-img">Name image</option>
+        <option value="car-img">Car image</option>
+        <option value="rest-img">Rest image</option>
+        <option value="qr-nav-btn">QR navigation button</option>
+        <option value="bottom-img">Bottom image</option>
+        <option value="pulse-logo">Pulse logo</option>
+        <option value="qr-close-btn">QR popup close button</option>
+    </select>
+
+    <div class="dimension-grid">
+        <label>
+            Width (px)
+            <input id="width-input" type="number" min="1" step="1">
+        </label>
+        <label>
+            Height (px)
+            <input id="height-input" type="number" min="1" step="1">
+        </label>
+    </div>
+
+    <button id="apply-size" type="button">Apply Size</button>
+    <button id="keep-ratio" type="button" class="secondary">Aspect Ratio: Locked</button>
+    <button id="move-selected" type="button">Move / Resize Selected</button>
+    <button id="toggle-editing" type="button" class="secondary">Lock Editing</button>
+    <button id="show-coordinates" type="button">Show Coordinates</button>
+    <button id="copy-coordinates" type="button">Copy Coordinates</button>
+    <button id="reset-positions" type="button" class="secondary">Reset Positions</button>
+    <button id="hide-editor" type="button" class="secondary">Hide Editor Panel</button>
+
+    <textarea id="coordinate-output" readonly></textarea>
+
+    <div class="editor-status" id="editor-status">
+        Select an element, set its size, or click Move / Resize Selected. Drag the page to move it and drag an orange corner handle to resize it.
+    </div>
 </div>
 
 <script>
-    const qrBtn = document.getElementById('qr-nav-btn');
+"use strict";
 
-    qrBtn.addEventListener('click', (e) => {
-        openQrPopup();
+document.addEventListener("dragstart", function(event) {
+    if (event.target instanceof HTMLImageElement) {
+        event.preventDefault();
+    }
+});
+
+const STORAGE_KEY = "static-ui-layout-positions-v4";
+
+const mainContainer = document.getElementById("main-container");
+const clockEl = document.getElementById("clock");
+const clockBgEl = document.getElementById("clock-bg");
+const qrOverlay = document.getElementById("qr-popup-overlay");
+const dragSurface = document.getElementById("drag-surface");
+const resizeBox = document.getElementById("resize-handles");
+const editorPanel = document.getElementById("editor-panel");
+const editorToggle = document.getElementById("editor-toggle");
+const editorStatus = document.getElementById("editor-status");
+const elementSelect = document.getElementById("element-select");
+const coordinateOutput = document.getElementById("coordinate-output");
+const widthInput = document.getElementById("width-input");
+const heightInput = document.getElementById("height-input");
+const moveSelectedButton = document.getElementById("move-selected");
+const toggleEditingButton = document.getElementById("toggle-editing");
+const keepRatioButton = document.getElementById("keep-ratio");
+
+const draggableElements = Array.from(
+    document.querySelectorAll(".draggable-element")
+);
+
+const originalStyles = {};
+let selectedElementId = elementSelect.value;
+let editingEnabled = true;
+let editMode = false;
+let activeInteraction = null;
+let keepAspectRatio = true;
+let aspectRatio = 1;
+let suppressClickUntil = 0;
+let movedDuringInteraction = false;
+let pulseWasAnimating = true;
+
+draggableElements.forEach(function(element) {
+    originalStyles[element.id] = element.getAttribute("style");
+});
+
+function setStatus(message) {
+    editorStatus.textContent = message;
+}
+
+function getSelectedElement() {
+    return document.getElementById(selectedElementId);
+}
+
+function isContainerChild(element) {
+    return element.parentElement === mainContainer;
+}
+
+function getPosition(element) {
+    const rect = element.getBoundingClientRect();
+
+    if (isContainerChild(element)) {
+        const parentRect = mainContainer.getBoundingClientRect();
+        const scaleX = parentRect.width / mainContainer.offsetWidth || 1;
+        const scaleY = parentRect.height / mainContainer.offsetHeight || 1;
+
+        return {
+            x: (rect.left - parentRect.left) / scaleX,
+            y: (rect.top - parentRect.top) / scaleY
+        };
+    }
+
+    return {
+        x: rect.left,
+        y: rect.top
+    };
+}
+
+function prepareElement(element) {
+    const rect = element.getBoundingClientRect();
+
+    if (isContainerChild(element)) {
+        const parentRect = mainContainer.getBoundingClientRect();
+        const scaleX = parentRect.width / mainContainer.offsetWidth || 1;
+        const scaleY = parentRect.height / mainContainer.offsetHeight || 1;
+
+        element.style.position = "absolute";
+        element.style.left = ((rect.left - parentRect.left) / scaleX) + "px";
+        element.style.top = ((rect.top - parentRect.top) / scaleY) + "px";
+    } else {
+        element.style.position = "fixed";
+        element.style.left = rect.left + "px";
+        element.style.top = rect.top + "px";
+    }
+
+    element.style.right = "auto";
+    element.style.bottom = "auto";
+    element.style.transform = "none";
+
+    if (element.id === "pulse-logo") {
+        pulseWasAnimating = getComputedStyle(element).animationName !== "none";
+        element.style.animation = "none";
+    }
+}
+
+function restorePulseAnimation(element) {
+    if (element && element.id === "pulse-logo" && pulseWasAnimating) {
+        element.style.animation = "";
+    }
+}
+
+function updateSizeInputs() {
+    const element = getSelectedElement();
+    if (!element) return;
+
+    const rect = element.getBoundingClientRect();
+
+    widthInput.value = Math.round(rect.width);
+    heightInput.value = Math.round(rect.height);
+
+    aspectRatio = rect.width / (rect.height || 1);
+}
+
+function updateResizeHandles() {
+    if (!editMode) {
+        resizeBox.style.display = "none";
+        return;
+    }
+
+    const element = getSelectedElement();
+
+    if (!element) {
+        resizeBox.style.display = "none";
+        return;
+    }
+
+    const rect = element.getBoundingClientRect();
+
+    resizeBox.style.display = "block";
+    resizeBox.style.left = rect.left + "px";
+    resizeBox.style.top = rect.top + "px";
+    resizeBox.style.width = rect.width + "px";
+    resizeBox.style.height = rect.height + "px";
+}
+
+function updateSelection() {
+    draggableElements.forEach(function(element) {
+        element.classList.toggle(
+            "drag-selected",
+            editMode && element.id === selectedElementId
+        );
     });
 
-    function openQrPopup() {
-        document.getElementById('qr-popup-overlay').classList.add('active');
-        document.body.style.overflow = 'hidden';
+    updateSizeInputs();
+    updateResizeHandles();
+    syncClockBg();
+}
+
+function savePositions() {
+    const saved = {};
+
+    draggableElements.forEach(function(element) {
+        saved[element.id] = element.getAttribute("style") || "";
+    });
+
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+        setStatus("Position and size saved automatically.");
+    } catch (error) {
+        setStatus("Could not save changes in this browser.");
+    }
+}
+
+function loadPositions() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+        draggableElements.forEach(function(element) {
+            if (Object.prototype.hasOwnProperty.call(saved, element.id)) {
+                element.setAttribute("style", saved[element.id]);
+            }
+        });
+    } catch (error) {
+        console.error("Could not load saved layout:", error);
+    }
+}
+
+/* Select an element. */
+
+elementSelect.addEventListener("change", function() {
+    if (editMode) {
+        exitEditMode(false);
     }
 
-    function closeQrPopup() {
-        document.getElementById('qr-popup-overlay').classList.remove('active');
-        document.body.style.overflow = '';
+    selectedElementId = this.value;
+    updateSelection();
+
+    const element = getSelectedElement();
+    setStatus("Selected: " + (element.dataset.dragName || element.id) + ".");
+});
+
+/* Apply width and height from the numeric fields. */
+
+document.getElementById("apply-size").addEventListener("click", function() {
+    if (!editingEnabled) {
+        setStatus("Unlock editing before changing an element.");
+        return;
     }
 
-    document.getElementById('qr-close-btn').addEventListener('click', closeQrPopup);
+    const element = getSelectedElement();
+    const width = Number(widthInput.value);
+    const height = Number(heightInput.value);
 
-    // Generic drag function for elements inside the main container
-    function makeDraggable(element, onMove) {
-        let offsetX, offsetY;
+    if (!element || !Number.isFinite(width) || !Number.isFinite(height) ||
+        width <= 0 || height <= 0) {
+        setStatus("Enter a width and height greater than zero.");
+        return;
+    }
 
-        element.addEventListener('mousedown', startDrag);
-        element.addEventListener('touchstart', startDrag, {passive: false});
+    prepareElement(element);
 
-        function startDrag(e) {
-            const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
-            const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
-            
-            const rect = element.getBoundingClientRect();
-            const container = document.getElementById('main-container');
-            const containerRect = container.getBoundingClientRect();
+    element.style.width = width + "px";
+    element.style.height = height + "px";
 
-            if (element.style.transform && element.style.transform.includes('translateX')) {
-                element.style.transform = 'none';
-                element.style.left = (rect.left - containerRect.left) + 'px';
+    if (element.id === "clock") {
+        element.style.height = "auto";
+        element.style.width = width + "px";
+    }
+
+    if (element.id === "yellow-block") {
+        element.style.width = width + "px";
+        element.style.height = height + "px";
+    }
+
+    if (element.id === "white-block") {
+        element.style.width = width + "px";
+        element.style.height = height + "px";
+    }
+
+    if (element.tagName === "IMG") {
+        element.style.objectFit = "fill";
+    }
+
+    updateSelection();
+    savePositions();
+    setStatus("Size updated to " + Math.round(width) + " × " + Math.round(height) + " px.");
+});
+
+/* Aspect ratio lock toggle. */
+
+keepRatioButton.addEventListener("click", function() {
+    keepAspectRatio = !keepAspectRatio;
+
+    keepRatioButton.textContent = keepAspectRatio
+        ? "Aspect Ratio: Locked"
+        : "Aspect Ratio: Unlocked";
+
+    keepRatioButton.classList.toggle("active-button", !keepAspectRatio);
+
+    const element = getSelectedElement();
+    if (element) {
+        const rect = element.getBoundingClientRect();
+        aspectRatio = rect.width / (rect.height || 1);
+    }
+});
+
+/* Start selected-element move mode. */
+
+function enterEditMode() {
+    if (!editingEnabled) {
+        setStatus("Unlock editing first.");
+        return;
+    }
+
+    const element = getSelectedElement();
+    if (!element) return;
+
+    if (element.id === "qr-close-btn" && !qrOverlay.classList.contains("active")) {
+        qrOverlay.classList.add("active");
+        document.body.style.overflow = "hidden";
+    }
+
+    prepareElement(element);
+
+    editMode = true;
+    document.body.classList.add("edit-mode");
+
+    moveSelectedButton.textContent = "Finish Editing Element";
+    moveSelectedButton.classList.add("active-button");
+
+    updateSelection();
+
+    setStatus(
+        "Editing " + (element.dataset.dragName || element.id) +
+        ". Drag anywhere outside the editor to move it. Drag an orange corner to resize."
+    );
+}
+
+function exitEditMode(save = true) {
+    const element = getSelectedElement();
+
+    editMode = false;
+    activeInteraction = null;
+
+    document.body.classList.remove("edit-mode");
+
+    moveSelectedButton.textContent = "Move / Resize Selected";
+    moveSelectedButton.classList.remove("active-button");
+
+    document.removeEventListener("pointermove", moveElement);
+    document.removeEventListener("pointerup", finishInteraction);
+    document.removeEventListener("pointercancel", finishInteraction);
+
+    if (element) {
+        restorePulseAnimation(element);
+        element.classList.remove("drag-selected");
+    }
+
+    if (save) savePositions();
+
+    updateResizeHandles();
+    syncClockBg();
+
+    setStatus("Editing finished. Select another element or copy the coordinates.");
+}
+
+moveSelectedButton.addEventListener("click", function() {
+    if (editMode) {
+        exitEditMode();
+    } else {
+        enterEditMode();
+    }
+});
+
+/* Move selected element by dragging the transparent surface. */
+
+dragSurface.addEventListener("pointerdown", function(event) {
+    if (!editMode || !editingEnabled) return;
+    if (event.button !== undefined && event.button !== 0) return;
+    if (event.target.closest("#editor-panel")) return;
+    if (event.target.closest("#editor-toggle")) return;
+
+    const element = getSelectedElement();
+    if (!element) return;
+
+    event.preventDefault();
+
+    const position = getPosition(element);
+
+    activeInteraction = {
+        type: "move",
+        element: element,
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        initialX: position.x,
+        initialY: position.y
+    };
+
+    movedDuringInteraction = false;
+
+    document.addEventListener("pointermove", moveElement, { passive: false });
+    document.addEventListener("pointerup", finishInteraction);
+    document.addEventListener("pointercancel", finishInteraction);
+});
+
+/* Resize by dragging one of the four orange corner handles. */
+
+resizeBox.querySelectorAll(".resize-handle").forEach(function(handle) {
+    handle.addEventListener("pointerdown", function(event) {
+        if (!editMode || !editingEnabled) return;
+        if (event.button !== undefined && event.button !== 0) return;
+
+        const element = getSelectedElement();
+        if (!element) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        prepareElement(element);
+
+        const rect = element.getBoundingClientRect();
+        const position = getPosition(element);
+        const scaleX = isContainerChild(element)
+            ? (mainContainer.getBoundingClientRect().width / mainContainer.offsetWidth || 1)
+            : 1;
+        const scaleY = isContainerChild(element)
+            ? (mainContainer.getBoundingClientRect().height / mainContainer.offsetHeight || 1)
+            : 1;
+
+        activeInteraction = {
+            type: "resize",
+            element: element,
+            pointerId: event.pointerId,
+            handle: handle.dataset.handle,
+            startX: event.clientX,
+            startY: event.clientY,
+            initialX: position.x,
+            initialY: position.y,
+            initialWidth: rect.width / scaleX,
+            initialHeight: rect.height / scaleY,
+            scaleX: scaleX,
+            scaleY: scaleY,
+            ratio: rect.width / (rect.height || 1)
+        };
+
+        aspectRatio = activeInteraction.ratio;
+        movedDuringInteraction = false;
+
+        document.addEventListener("pointermove", moveElement, { passive: false });
+        document.addEventListener("pointerup", finishInteraction);
+        document.addEventListener("pointercancel", finishInteraction);
+    });
+});
+
+function moveElement(event) {
+    if (!activeInteraction) return;
+    if (event.pointerId !== activeInteraction.pointerId) return;
+
+    event.preventDefault();
+
+    const interaction = activeInteraction;
+    const element = interaction.element;
+
+    const dx = event.clientX - interaction.startX;
+    const dy = event.clientY - interaction.startY;
+
+    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+        movedDuringInteraction = true;
+    }
+
+    if (interaction.type === "move") {
+        const scaleX = isContainerChild(element)
+            ? (mainContainer.getBoundingClientRect().width / mainContainer.offsetWidth || 1)
+            : 1;
+        const scaleY = isContainerChild(element)
+            ? (mainContainer.getBoundingClientRect().height / mainContainer.offsetHeight || 1)
+            : 1;
+
+        element.style.left = (interaction.initialX + dx / scaleX) + "px";
+        element.style.top = (interaction.initialY + dy / scaleY) + "px";
+        element.style.right = "auto";
+        element.style.bottom = "auto";
+    } else if (interaction.type === "resize") {
+        const handle = interaction.handle;
+
+        let width = interaction.initialWidth;
+        let height = interaction.initialHeight;
+        let left = interaction.initialX;
+        let top = interaction.initialY;
+
+        const logicalDX = dx / interaction.scaleX;
+        const logicalDY = dy / interaction.scaleY;
+
+        if (handle.includes("e")) width += logicalDX;
+        if (handle.includes("w")) {
+            width -= logicalDX;
+            left += logicalDX;
+        }
+        if (handle.includes("s")) height += logicalDY;
+        if (handle.includes("n")) {
+            height -= logicalDY;
+            top += logicalDY;
+        }
+
+        width = Math.max(8, width);
+        height = Math.max(8, height);
+
+        if (keepAspectRatio) {
+            if (Math.abs(dx) >= Math.abs(dy)) {
+                height = width / (interaction.ratio || 1);
+            } else {
+                width = height * (interaction.ratio || 1);
             }
 
-            offsetX = clientX - rect.left;
-            offsetY = clientY - rect.top;
-            
-            document.addEventListener('mousemove', drag);
-            document.addEventListener('touchmove', drag, {passive: false});
-            document.addEventListener('mouseup', stopDrag);
-            document.addEventListener('touchend', stopDrag);
+            if (handle.includes("w")) {
+                left = interaction.initialX + interaction.initialWidth - width;
+            }
+
+            if (handle.includes("n")) {
+                top = interaction.initialY + interaction.initialHeight - height;
+            }
         }
 
-        function drag(e) {
-            const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
-            const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
-            
-            const container = document.getElementById('main-container');
-            const containerRect = container.getBoundingClientRect();
-            
-            element.style.bottom = 'auto'; 
-            element.style.left = (clientX - offsetX - containerRect.left) + 'px';
-            element.style.top = (clientY - offsetY + window.scrollY - containerRect.top) + 'px';
+        element.style.width = width + "px";
+        element.style.height = height + "px";
+        element.style.left = left + "px";
+        element.style.top = top + "px";
+        element.style.right = "auto";
+        element.style.bottom = "auto";
 
-            if (onMove) onMove();
+        if (element.tagName === "IMG") {
+            element.style.objectFit = "fill";
         }
 
-        function stopDrag() {
-            document.removeEventListener('mousemove', drag);
-            document.removeEventListener('touchmove', drag);
-        }
+        widthInput.value = Math.round(width);
+        heightInput.value = Math.round(height);
     }
 
-    makeDraggable(document.getElementById('white-block'));
+    updateResizeHandles();
+    syncClockBg();
+}
 
-    const clockEl = document.getElementById('clock');
-    const clockBgEl = document.getElementById('clock-bg');
+function finishInteraction(event) {
+    if (!activeInteraction) return;
 
-    function syncClockBg() {
-        clockBgEl.style.left = clockEl.style.left || clockEl.offsetLeft + 'px';
-        clockBgEl.style.top = clockEl.style.top || clockEl.offsetTop + 'px';
-        clockBgEl.style.width = clockEl.offsetWidth + 'px';
-        clockBgEl.style.height = clockEl.offsetHeight + 'px';
+    if (
+        event &&
+        event.pointerId !== undefined &&
+        event.pointerId !== activeInteraction.pointerId
+    ) {
+        return;
     }
 
-    makeDraggable(clockEl, syncClockBg);
+    const element = activeInteraction.element;
 
-    function updateClock() {
-        const now = new Date();
-        let hours = now.getHours();
-        const ampm = hours >= 12 ? 'pm' : 'am';
-        hours = hours % 12 || 12;
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const timeString = `${now.getDate()} ${now.toLocaleString('default', {month:'short'})} ${now.getFullYear()} ${hours}:${minutes}${ampm}`;
-        document.getElementById('clock-text').textContent = timeString;
+    activeInteraction = null;
+
+    document.removeEventListener("pointermove", moveElement);
+    document.removeEventListener("pointerup", finishInteraction);
+    document.removeEventListener("pointercancel", finishInteraction);
+
+    suppressClickUntil = Date.now() + 250;
+
+    updateSelection();
+
+    if (movedDuringInteraction) {
+        savePositions();
+        setStatus("Updated position or size saved.");
+    } else {
+        setStatus("No change made.");
+    }
+
+    if (element.id === "clock") {
         syncClockBg();
     }
-    setInterval(updateClock, 1000);
-    updateClock();
+}
+
+/* Editing lock. */
+
+toggleEditingButton.addEventListener("click", function() {
+    editingEnabled = !editingEnabled;
+
+    document.body.classList.toggle("layout-locked", !editingEnabled);
+
+    if (!editingEnabled && editMode) {
+        exitEditMode();
+    }
+
+    toggleEditingButton.textContent = editingEnabled
+        ? "Lock Editing"
+        : "Unlock Editing";
+
+    setStatus(
+        editingEnabled
+            ? "Editing unlocked."
+            : "Editing locked. Your saved positions and sizes are preserved."
+    );
+});
+
+/* QR popup functionality. */
+
+document.getElementById("qr-nav-btn").addEventListener("click", function(event) {
+    if (Date.now() < suppressClickUntil) {
+        event.preventDefault();
+        return;
+    }
+
+    if (editingEnabled) {
+        setStatus("Lock editing before using the QR button.");
+        return;
+    }
+
+    qrOverlay.classList.add("active");
+    document.body.style.overflow = "hidden";
+});
+
+document.getElementById("qr-close-btn").addEventListener("click", function(event) {
+    if (Date.now() < suppressClickUntil) {
+        event.preventDefault();
+        return;
+    }
+
+    if (!editingEnabled) {
+        qrOverlay.classList.remove("active");
+        document.body.style.overflow = "";
+    }
+});
+
+/* Clock. */
+
+function syncClockBg() {
+    if (!clockEl || !clockBgEl || !mainContainer) return;
+
+    const clockRect = clockEl.getBoundingClientRect();
+    const containerRect = mainContainer.getBoundingClientRect();
+
+    clockBgEl.style.left = (clockRect.left - containerRect.left) + "px";
+    clockBgEl.style.top = (clockRect.top - containerRect.top) + "px";
+    clockBgEl.style.width = clockRect.width + "px";
+    clockBgEl.style.height = clockRect.height + "px";
+}
+
+function updateClock() {
+    const now = new Date();
+
+    let hours = now.getHours();
+    const ampm = hours >= 12 ? "pm" : "am";
+
+    hours = hours % 12 || 12;
+
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+
+    document.getElementById("clock-text").textContent =
+        `${now.getDate()} ` +
+        `${now.toLocaleString("default", { month: "short" })} ` +
+        `${now.getFullYear()} ${hours}:${minutes}${ampm}`;
+
+    syncClockBg();
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+
+/* Coordinates. */
+
+function getCoordinates(element) {
+    const rect = element.getBoundingClientRect();
+    const position = getPosition(element);
+
+    return {
+        id: element.id,
+        name: element.dataset.dragName || element.id,
+        x: Math.round(position.x * 100) / 100,
+        y: Math.round(position.y * 100) / 100,
+        viewportX: Math.round(rect.left * 100) / 100,
+        viewportY: Math.round(rect.top * 100) / 100,
+        width: Math.round(rect.width * 100) / 100,
+        height: Math.round(rect.height * 100) / 100,
+        coordinateSystem: isContainerChild(element)
+            ? "main-container"
+            : "viewport"
+    };
+}
+
+function getElementsForOutput() {
+    return elementSelect.value === "all"
+        ? draggableElements
+        : [getSelectedElement()].filter(Boolean);
+}
+
+/* The select normally lists one element at a time, but this option remains
+   available in case you add an "all" option later. */
+
+document.getElementById("show-coordinates").addEventListener("click", function() {
+    coordinateOutput.value = JSON.stringify(
+        getElementsForOutput().map(getCoordinates),
+        null,
+        2
+    );
+
+    coordinateOutput.style.display = "block";
+    setStatus("Coordinates and sizes displayed.");
+});
+
+document.getElementById("copy-coordinates").addEventListener("click", async function() {
+    if (!coordinateOutput.value.trim()) {
+        document.getElementById("show-coordinates").click();
+    }
+
+    try {
+        await navigator.clipboard.writeText(coordinateOutput.value);
+        setStatus("Coordinates copied. Paste them into your message.");
+    } catch (error) {
+        coordinateOutput.focus();
+        coordinateOutput.select();
+        setStatus("Coordinates selected. Press Command+C to copy them.");
+    }
+});
+
+/* Reset original styles. */
+
+document.getElementById("reset-positions").addEventListener("click", function() {
+    if (!confirm("Reset every element to its original position and size?")) return;
+
+    if (editMode) exitEditMode(false);
+
+    draggableElements.forEach(function(element) {
+        const original = originalStyles[element.id];
+
+        if (original === null) {
+            element.removeAttribute("style");
+        } else {
+            element.setAttribute("style", original);
+        }
+
+        element.classList.remove("drag-selected");
+    });
+
+    localStorage.removeItem(STORAGE_KEY);
+
+    coordinateOutput.value = "";
+    coordinateOutput.style.display = "none";
+
+    updateSelection();
+    syncClockBg();
+
+    setStatus("All elements reset to their original positions and sizes.");
+});
+
+/* Editor visibility. */
+
+function hideEditor() {
+    document.body.classList.add("editor-hidden");
+    editorToggle.textContent = "Show Editor";
+}
+
+function showEditor() {
+    document.body.classList.remove("editor-hidden");
+    editorToggle.textContent = "Hide Editor";
+}
+
+document.getElementById("hide-editor").addEventListener("click", hideEditor);
+
+editorToggle.addEventListener("click", function() {
+    if (document.body.classList.contains("editor-hidden")) {
+        showEditor();
+    } else {
+        hideEditor();
+    }
+});
+
+/* Escape finishes editing the current element. */
+
+document.addEventListener("keydown", function(event) {
+    if (event.key === "Escape" && editMode) {
+        exitEditMode();
+    }
+});
+
+window.addEventListener("resize", function() {
+    updateResizeHandles();
+    syncClockBg();
+});
+
+/* Initial setup. */
+
+loadPositions();
+updateSelection();
+syncClockBg();
 </script>
+
 </body>
 </html>
